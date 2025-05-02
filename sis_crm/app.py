@@ -1183,17 +1183,17 @@ class SistemaProtocolos:
         ).grid(row=4, column=0, padx=20, sticky="w")
 
         def abrir_linkedin():
-            webbrowser.open_new("https://linkedin.com/in/fulano")
+            webbrowser.open_new("www.linkedin.com/in/gabrielhconstantino2")
 
         link_linkedin = ctk.CTkLabel(
         frame_principal, 
-        text="linkedin.com/in/fulano", 
+        text="linkedin.com/in/gabrielhconstantino2", 
         font=("Poppins", 14), 
         anchor="w",
         cursor="hand2",
         text_color="#1E90FF"
         )
-        link_linkedin.grid(row=4, column=0, padx=120, sticky="w")  # Ajuste o padx para alinhamento
+        link_linkedin.grid(row=4, column=0, padx=110, sticky="w")  # Ajuste o padx para alinhamento
         link_linkedin.bind("<Button-1>", lambda e: abrir_linkedin())
 
         # Linha do GitHub
@@ -1208,11 +1208,11 @@ class SistemaProtocolos:
         ).grid(row=5, column=0, padx=20, sticky="w")
 
         def abrir_github():
-            webbrowser.open_new("https://github.com/fulano/projeto")
+            webbrowser.open_new("https://github.com/gabrielhenriqueconstantino/sis_registro_crm_dz_sorocaba")
 
         link_github = ctk.CTkLabel(
         frame_principal, 
-        text="github.com/fulano/projeto", 
+        text="github.com/gabrielhenriqueconstantino/sis_registro_crm_dz_sorocaba", 
         font=("Poppins", 14), 
         anchor="w",
         cursor="hand2",
@@ -1233,11 +1233,11 @@ class SistemaProtocolos:
         ).grid(row=6, column=0, padx=20, sticky="w")
 
         def abrir_docs():
-            webbrowser.open_new("https://www.exemplo.com/manual")
+            webbrowser.open_new("https://github.com/gabrielhenriqueconstantino/sis_registro_crm_dz_sorocaba/blob/main/README.md")
 
         link_docs = ctk.CTkLabel(
         frame_principal, 
-        text="www.exemplo.com/manual", 
+        text="github.com/gabrielhenriqueconstantino/sis_registro_crm_dz_sorocaba/blob/main/README.md", 
         font=("Poppins", 14), 
         anchor="w",
         cursor="hand2",
