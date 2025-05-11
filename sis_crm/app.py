@@ -45,7 +45,7 @@ class SistemaProtocolos:
         self.root.title("Sistema de Registro, Consulta e Análise de Protocolos de Reclamação")
 
         # Caminho para o ícone
-        caminho_icone = Path(__file__).parent / "img" / "icons" / "icons_window" / "logo_sis_crm.ico"
+        caminho_icone = Path(__file__).parent / "img" / "icons" / "icons_window" / "icon_main.ico"
         
         # Definir o ícone - chamando iconbitmap no root (objeto Tk)
         try:
@@ -1212,7 +1212,7 @@ class SistemaProtocolos:
 
         link_github = ctk.CTkLabel(
         frame_principal, 
-        text="github.com/gabrielhenriqueconstantino/sis_registro_crm_dz_sorocaba", 
+        text="github.com/sis_registro_crm_dz_sorocaba", 
         font=("Poppins", 14), 
         anchor="w",
         cursor="hand2",
@@ -1237,7 +1237,7 @@ class SistemaProtocolos:
 
         link_docs = ctk.CTkLabel(
         frame_principal, 
-        text="github.com/gabrielhenriqueconstantino/sis_registro_crm_dz_sorocaba/blob/main/README.md", 
+        text="github.com/sis_registro_crm_dz_sorocaba/README.md", 
         font=("Poppins", 14), 
         anchor="w",
         cursor="hand2",
