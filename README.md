@@ -89,6 +89,6 @@ pyinstaller --onefile --noconsole
 
 ## 📄 Licença
 
-Este projeto é de uso interno da Secretaria da Saúde de Sorocaba. Uso externo requer autorização prévia.
+Este projeto é livre e pode ser utilizado e modificado por setores da de uso interno da Prefeitura Municipal de Sorocaba
 
 ---
