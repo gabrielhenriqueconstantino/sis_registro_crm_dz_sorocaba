@@ -75,8 +75,8 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
 
 # Caminhos
-caminho_banco = Path("database/db/sistema_protocolos.db")
-caminho_excel = Path("database/backup/backup.xlsx")
+caminho_banco = Path("sis_crm/database/db/sistema_protocolos.db")
+caminho_excel = Path("sis_crm/database/backup/backup.xlsx")
 caminho_excel.parent.mkdir(parents=True, exist_ok=True)
 
 # Conectar ao banco de dados
