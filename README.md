@@ -58,8 +58,8 @@ sis_crm/
 
 * O botão “Análise” permite gerar gráficos por:
 
-  * **Área administrativa**
-  * **Tipo de problema**
+  * **Área Municipal (Sudoeste, Noroeste, Centro-Sul etc**
+  * **Tipo de problema (Focos de Dengue, Animais Peçonhentos, Imóveis Abandonados etc**
   * Agrupamento por **quantidade** ou **tipo**
 
 ---
