@@ -21,19 +21,23 @@
 ## 📂 Estrutura de Pastas
 
 ```
+---
+## 📂 Estrutura de Pastas
+```
 sis_crm/
-├── app.py                     # Arquivo principal
+├── atualizar_bairro/          # Funções de busca de bairro (Selenium)
+├── chromedriver/              # Driver do navegador Chrome (para Selenium)
 ├── database/
+│   ├── backup/                # Arquivos de backup
 │   ├── db/                    # Banco de dados SQLite
-│   ├── insert_sql/            # Scripts de inserção
-│   └── backup/                # Arquivos de backup
-├── img/
-│   ├── logo/                  # Logos do sistema
-│   └── icons/
-│       ├── icons_app/         # Ícones da aplicação
-│       └── icons_window/      # Ícones da janela
+│   └── insert_sql/            # Scripts de inserção
 ├── font/                      # Fontes personalizadas (se houver)
-└── atualizar_bairro/          # Funções de busca de bairro (Selenium)
+└── img/
+    ├── icons/
+    │   ├── icons_app/         # Ícones da aplicação
+    │   └── icons_window/      # Ícones da janela
+    └── logo/                  # Logos do sistema
+```
 ```
 
 ---
