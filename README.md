@@ -1,4 +1,4 @@
-# # 🩺 SisconProtDZ - Sistema de Consulta, Registro e Análise de Protocolos de Reclamação
+# 🩺 SisconProtDZ - Sistema de Consulta, Registro e Análise de Protocolos de Reclamação
 ---
 
 **SisconProtDZ** é uma aplicação desktop para registro, controle e análise de protocolos oriundos da Ouvidoria do Munícipio de Sorocaba, onde os cidadãos podem fazer pedidos e solicitações para a prefeitura - incluindo visitas para vigilância em saúde. Desenvolvido com Python e interface gráfica usando `Tkinter` e `CustomTkinter`, o sistema visa facilitar o gerenciamento de solicitações como visitas técnicas, denúncias de focos de dengue e demais demandas da população.
