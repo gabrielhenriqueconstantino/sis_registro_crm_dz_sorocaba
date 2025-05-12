@@ -24,6 +24,7 @@
 ---
 ## 📂 Estrutura de Pastas
 ```
+```
 sis_crm/
 ├── atualizar_bairro/          # Funções de busca de bairro (Selenium)
 ├── chromedriver/              # Driver do navegador Chrome (para Selenium)
@@ -38,7 +39,7 @@ sis_crm/
     │   └── icons_window/      # Ícones da janela
     └── logo/                  # Logos do sistema
 ```
-```
+
 
 ---
 
