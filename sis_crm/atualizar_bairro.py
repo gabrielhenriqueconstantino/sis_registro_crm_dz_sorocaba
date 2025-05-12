@@ -65,10 +65,10 @@ from selenium.webdriver.support import expected_conditions as EC
 from pathlib import Path
 
 # Caminho do banco de dados
-DB_PATH = Path("database/db/sistema_protocolos.db")  # ajuste se estiver em outro lugar
+DB_PATH = Path("sis_crm/database/db/sistema_protocolos.db")  # ajuste se estiver em outro lugar
 
 # Caminho do ChromeDriver
-CHROMEDRIVER_PATH = Path("chromedriver/chromedriver.exe")  # ajuste se necessário
+CHROMEDRIVER_PATH = Path("sis_crm/chromedriver/chromedriver.exe")  # ajuste se necessário
 
 def buscar_bairro_e_problema(protocolo):
     options = Options()
@@ -76,40 +76,70 @@ def buscar_bairro_e_problema(protocolo):
     service = Service(CHROMEDRIVER_PATH)
     driver = webdriver.Chrome(service=service, options=options)
 
-    url = f"http://central156.sorocaba.sp.gov.br/atendimento/#/User/Request?protocolo={protocolo}&origem=2"
+    url = f"http://central156.sorocaba.sp.gov.br/atendimento/#/User/Request?protocolo={protocolo}"
     driver.get(url)
 
     try:
         # === BUSCAR BAIRRO ===
-        bloco_endereco = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, '//h3[contains(text(), "Endereço")]/parent::div'))
-        )
-        label_endereco = bloco_endereco.find_element(By.XPATH, './/label[@class="ng-binding"]')
-        endereco_completo = label_endereco.text
-        print(f"[{protocolo}] Endereço completo:", endereco_completo)
+            # Verificar se a página carregou completamente
+            WebDriverWait(driver, 10).until(
+                lambda d: d.execute_script('return document.readyState') == 'complete'
+            )
+        
+            # Espera adicional para garantir que o conteúdo dinâmico foi carregado
+            time.sleep(2)  # Ajuste este tempo conforme necessário
 
-        bairro = None
-        bairro_match = re.search(r'-\s*([^-/]+)\s*-\s*Sorocaba\s*/SP$', endereco_completo)
-        if bairro_match:
-            bairro = bairro_match.group(1).strip()
-            bairro = re.sub(r'-', '', bairro).strip()
+            # Espera explícita para o elemento estar presente
+            # Localizar a div que contém o cabeçalho "Endereço" e então pegar o label dentro dela
+            endereco_element = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, 
+                '//div[@class="list-group-item"][.//h3[contains(text(), "Endereço")]]'
+                '//div[@class="row"][.//div[@class="small-12 columns"]]'
+                '//label[@class="ng-binding"]'))
+            )
+
+            # Destacar visualmente o elemento encontrado (seleção amarela)
+            driver.execute_script(
+            "arguments[0].style.backgroundColor = 'yellow';"
+            "arguments[0].style.border = '2px solid red';"
+            "arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});",
+            endereco_element
+            )
+
+            # Manter o destaque por 4 segundos para visualização
+            time.sleep(4)
+
+            # Remover o destaque
+            driver.execute_script(
+            "arguments[0].style.backgroundColor = '';"
+            "arguments[0].style.border = '';",
+            endereco_element
+            )
+            print(f"[{protocolo}] Endereço completo:", endereco_element)
+
+            bairro = None
+            bairro_match = re.search(r'-\s*([^-/]+)\s*-\s*Sorocaba\s*/SP$', endereco_element)
+            if bairro_match:
+                bairro = bairro_match.group(1).strip()
+                bairro = re.sub(r'-', '', bairro).strip()
+
+            #exclusivo para a Vila Barão
             if bairro.lower() in ["barão", "barao"]:
                 bairro = "Vila Barão"
 
-        # === BUSCAR PROBLEMA ===
-        problema = None
-        # A string que contém "Reclamações / Saúde Pública / Animais Peçonhentos" está dentro de um label genérico
-        # Vamos buscar o primeiro label com esse formato
-        labels = driver.find_elements(By.XPATH, '//label[@class="ng-binding"]')
-        for label in labels:
-            texto = label.text
-            if texto.count(" / ") >= 2:
-                partes = texto.split(" / ")
-                problema = partes[-1].strip()
-                print(f"[{protocolo}] Problema extraído: {problema}")
-                break
+            # === BUSCAR PROBLEMA ===
+            problema = None
+            # A string que contém "Reclamações / Saúde Pública / Animais Peçonhentos" está dentro de um label genérico
+            labels = driver.find_elements(By.XPATH, '//label[@class="ng-binding"]')
+            for label in labels:
+                texto = label.text
+                if texto.count(" / ") >= 2:
+                    partes = texto.split(" / ")
+                    problema = partes[-1].strip()
+                    print(f"[{protocolo}] Problema extraído: {problema}")
+                    break
 
-        return (bairro if bairro else None), (problema if problema else None)
+            return (bairro if bairro else None), (problema if problema else None)
 
     except Exception as e:
         print(f"[{protocolo}] Erro ao buscar dados:", e)
