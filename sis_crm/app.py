@@ -4,8 +4,10 @@ import customtkinter as ctk
 from tkinter import font as tkfont
 from tkinter import ttk, messagebox
 from tkcalendar import DateEntry
+import locale
 import sqlite3
 from datetime import datetime
+import time
 import requests  # Para integração com a API de CEP
 import re
 from PIL import Image, ImageTk
@@ -45,7 +47,7 @@ class SistemaProtocolos:
         self.root.title("Sistema de Registro, Consulta e Análise de Protocolos de Reclamação")
 
         # Caminho para o ícone
-        caminho_icone = Path(__file__).parent / "img" / "icons" / "icons_window" / "icon_main.ico"
+        caminho_icone = Path("sis_crm/img/icons/icons_window/logo_sis_crm.ico")
         
         # Definir o ícone - chamando iconbitmap no root (objeto Tk)
         try:
@@ -84,6 +86,11 @@ class SistemaProtocolos:
         root.grid_rowconfigure(2, weight=5)
         root.grid_columnconfigure(0, weight=1)
 
+        # Adicione no início do seu código (após criar a janela principal)
+        style = ttk.Style()
+        style.configure('TCombobox', fieldbackground='white', background='white')
+        style.configure('TEntry', fieldbackground='white')
+
         self.criar_widgets()
         
         # Exibir todos os protcolos ao iniciar o aplicativo
@@ -100,14 +107,13 @@ class SistemaProtocolos:
         return monitor.width, monitor.height
 
     def resolucao(self):
-
         largura, altura = self.obter_resolucao()
         print(f'Sua resolução é {largura}x{altura}')
 
     def carregar_logo_dinamica(self):
         tema = ctk.get_appearance_mode()  # Retorna "Light" ou "Dark"
     
-        caminho_base = Path("img/logo")
+        caminho_base = Path("sis_crm/img/logo")
     
         if tema == "Light":
             imagem_logo = Image.open(caminho_base / "logo_preto.png")
@@ -177,7 +183,7 @@ class SistemaProtocolos:
         for col in range(3):
             self.frame_opcoes.grid_columnconfigure(col, weight=1)
 
-        self.icone_editar = ctk.CTkImage(Image.open("img/icons/icons_app/pen.png"), size=(30, 30))
+        self.icone_editar = ctk.CTkImage(Image.open("sis_crm/img/icons/icons_app/pen.png"), size=(30, 30))
         ctk.CTkButton(self.frame_opcoes,
                       image=self.icone_editar, 
                       text="", 
@@ -193,7 +199,7 @@ class SistemaProtocolos:
                              padx=10, 
                              pady=20)
         
-        self.icone_excluir = ctk.CTkImage(Image.open("img/icons/icons_app/delete.png"), size=(30, 30))
+        self.icone_excluir = ctk.CTkImage(Image.open("sis_crm/img/icons/icons_app/delete.png"), size=(30, 30))
         ctk.CTkButton(self.frame_opcoes,
                       image=self.icone_excluir, 
                       text="", 
@@ -209,7 +215,7 @@ class SistemaProtocolos:
                              padx=10, 
                              pady=20)
 
-        self.icone_dados = ctk.CTkImage(Image.open("img/icons/icons_app/data.png"), size=(30, 30))              
+        self.icone_dados = ctk.CTkImage(Image.open("sis_crm/img/icons/icons_app/data.png"), size=(30, 30))              
         ctk.CTkButton(self.frame_opcoes,
                       image=self.icone_dados, 
                       text="", 
@@ -229,8 +235,8 @@ class SistemaProtocolos:
         for col in range(3):
             self.frame_opcoes2.grid_columnconfigure(col, weight=1)
 
-        self.icone_lua = ctk.CTkImage(Image.open("img/icons/icons_app/moon.png"), size=(35, 35))
-        self.icone_sol = ctk.CTkImage(Image.open("img/icons/icons_app/sun.png"), size=(30, 30))
+        self.icone_lua = ctk.CTkImage(Image.open("sis_crm/img/icons/icons_app/moon.png"), size=(35, 35))
+        self.icone_sol = ctk.CTkImage(Image.open("sis_crm/img/icons/icons_app/sun.png"), size=(30, 30))
         self.icone_inicial = self.icone_sol if ctk.get_appearance_mode() == "Dark" else self.icone_lua
         self.botao_tema = ctk.CTkButton(self.frame_opcoes2, 
                                         text="",
@@ -244,7 +250,7 @@ class SistemaProtocolos:
                                         command=self.alternar_tema)
         self.botao_tema.grid(row=0, column=0, padx=20, pady=20)
 
-        self.icone_reload = ctk.CTkImage(Image.open("img/icons/icons_app/return.png"), size=(20, 20))
+        self.icone_reload = ctk.CTkImage(Image.open("sis_crm/img/icons/icons_app/return.png"), size=(20, 20))
         self.botao_reload = ctk.CTkButton(self.frame_opcoes2, 
                                           image=self.icone_reload,
                                           text="", 
@@ -257,7 +263,7 @@ class SistemaProtocolos:
                                           command=self.confirmar_reinicio)
         self.botao_reload.grid(row=0, column=1, padx=20, pady=20)
 
-        self.icone_info = ctk.CTkImage(Image.open("img/icons/icons_app/info.png"), size=(25, 25))
+        self.icone_info = ctk.CTkImage(Image.open("sis_crm/img/icons/icons_app/info.png"), size=(25, 25))
         self.botao_info = ctk.CTkButton(self.frame_opcoes2,
                                         image=self.icone_info, 
                                         text="", 
@@ -373,6 +379,30 @@ class SistemaProtocolos:
             # Remove o último caractere inválido
             self.entry_boletim.delete(len(valor)-1, tk.END)
 
+    #Validar protocolos para não incluir mais de 16 caracteres, contando espaços tbm.
+    def validar_protocolo_evento(self, event):
+        valor = self.entry_protocolo.get()
+    
+        # Remove espaços e converte para maiúsculas
+        novo_valor = valor.replace(" ", "").upper()
+    
+        # Verifica se o valor foi alterado (havia espaços)
+        if novo_valor != valor:
+            self.entry_protocolo.delete(0, tk.END)
+            self.entry_protocolo.insert(0, novo_valor)
+            return
+    
+        # Verifica se excedeu o tamanho máximo
+        if len(novo_valor) > 16:
+            self.entry_protocolo.delete(16, tk.END)
+            return
+    
+        # Verifica caracteres inválidos (permite letras, números e hífen)
+        for char in novo_valor:
+            if not (char.isalnum() or char == '-'):
+                # Remove o último caractere inválido
+                self.entry_protocolo.delete(len(novo_valor)-1, tk.END)
+                return
 
     def criar_frame_adicionar_crm(self):
         ## Configurar colunas para centralização
@@ -382,7 +412,7 @@ class SistemaProtocolos:
             self.frame_adicionar_crm.grid_rowconfigure(0, weight=1)
             self.frame_adicionar_crm.grid_rowconfigure(1, weight=1)
 
-            # Estilo para harmonizar com o CustomTkinter
+            # Estilo para harmonizar calendario com o CustomTkinter
             style = ttk.Style()
             style.theme_use('clam')  # Tema neutro que permite customizações
             style.configure("Custom.DateEntry",
@@ -395,15 +425,17 @@ class SistemaProtocolos:
                     darkcolor="#3a3a3a")
 
             # Campo de data com visual mais escuro
-            self.data_entry = DateEntry(self.frame_adicionar_crm, date_pattern='dd/mm/yyyy',
-                                style="Custom.DateEntry",
-                                borderwidth=1,
-                                font=("Arial", 10),
-                                justify="center")
+            self.data_entry = DateEntry(self.frame_adicionar_crm,
+                            date_pattern='dd/mm/yyyy',
+                            style="Custom.DateEntry",
+                            borderwidth=1,
+                            font=("Arial", 10),
+                            justify="center",
+                            locale='pt_BR')
             self.data_entry.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
 
             # Campo de data com calendário (DateEntry)
-            self.data_entry = DateEntry(self.frame_adicionar_crm, date_pattern='dd/mm/yyyy')
+            self.data_entry = DateEntry(self.frame_adicionar_crm, date_pattern='dd/mm/yyyy', locale="pt_BR")
             self.data_entry.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
             
             # Entrada para boletim (somente números inteiros, até 6 dígitos)
@@ -417,6 +449,7 @@ class SistemaProtocolos:
             # Entrada para protocolo
             self.entry_protocolo = ctk.CTkEntry(self.frame_adicionar_crm, placeholder_text="Protocolo")
             self.entry_protocolo.grid(row=0, column=2, padx=5, pady=5, sticky="ew")
+            self.entry_protocolo.bind("<KeyRelease>", self.validar_protocolo_evento)
 
             # ComboBox para a situação
             self.combo_situacao = ctk.CTkComboBox(self.frame_adicionar_crm, values=[
@@ -426,7 +459,8 @@ class SistemaProtocolos:
                 "Em andamento",
                 "Em retorno",
                 "Resolvido"
-                ])
+                ], state="readonly")
+            self.combo_situacao.set("Situação (selecione)")
             self.combo_situacao.grid(row=0, column=3, padx=5, pady=5, sticky="ew")
 
             # ComboBox para a área municipal
@@ -437,7 +471,8 @@ class SistemaProtocolos:
             "Centro-Norte", 
             "Noroeste", 
             "Norte", 
-            "Leste"])
+            "Leste"], state="readonly")
+            self.combo_area.set("Área (selecione)")
             self.combo_area.grid(row=0, column=4, padx=5, pady=5, sticky="ew")
 
             # ComboBox para os problemas
@@ -455,7 +490,8 @@ class SistemaProtocolos:
                 "Caramujos",
                 "Criação de animais rurais em zona urbana",
                 "Outras Reclamações de Saúde Pública"
-            ])
+            ], state="readonly")
+            self.combo_problema.set("Problema (selecione)")
             self.combo_problema.grid(row=0, column=5, padx=5, pady=5, sticky="ew")
 
             # Entrada para observações
@@ -482,7 +518,7 @@ class SistemaProtocolos:
 
     #BANCO DE DADOS    
     def criar_banco_dados():
-        caminho_banco = Path("database/db/sistema_protocolos.db")
+        caminho_banco = Path("sis_crm/database/db/sistema_protocolos.db")
         conn = sqlite3.connect(caminho_banco)  # Alterado o nome do banco
         cursor = conn.cursor()
 
@@ -518,7 +554,7 @@ class SistemaProtocolos:
         ).grid(row=0, column=0, columnspan=2, pady=(0, 15))
 
         self.entry_pesquisa_principal = ctk.CTkEntry(self.frame_exibir_pedidos, 
-                                           placeholder_text="Pesquise por data, boletim, área, situação, problema...", 
+                                           placeholder_text="Pesquise por data, boletim, área, situação, problema, aberto por...", 
                                            corner_radius=12, width=750, 
                                            border_color="white", border_width=1)
         self.entry_pesquisa_principal.grid(row=1, column=0, padx=10, pady=5, sticky="ew")
@@ -617,7 +653,7 @@ class SistemaProtocolos:
     #buscar o protocolo no site da prefeitura e pegar o endereço e bairro para colocar na tabela
     def buscar_bairro(self):
         # Caminho para o ChromeDriver
-        chromedriver_path = Path("chromedriver/chromedriver.exe")  # Ajuste o caminho se necessário
+        chromedriver_path = Path("sis_crm/chromedriver/chromedriver.exe")  # Ajuste o caminho se necessário
 
         # Configurações do navegador Chrome
         options = Options()
@@ -629,40 +665,47 @@ class SistemaProtocolos:
 
         # Acessando o site diretamente
         buscar_protocolo = self.entry_protocolo.get()  # Exemplo de protocolo
-        url = f"http://central156.sorocaba.sp.gov.br/atendimento/#/User/Request?protocolo={buscar_protocolo}&origem=2"
+        url = f"http://central156.sorocaba.sp.gov.br/atendimento/#/User/Request?protocolo={buscar_protocolo}"
         driver.get(url)
 
         try:
+            # Verificar se a página carregou completamente
+            WebDriverWait(driver, 10).until(
+                lambda d: d.execute_script('return document.readyState') == 'complete'
+            )
+        
+            # Espera adicional para garantir que o conteúdo dinâmico foi carregado
+            time.sleep(2)  # Ajuste este tempo conforme necessário
+
             # Espera explícita para o elemento estar presente
-            label_element = WebDriverWait(driver, 10).until(
+            # Localizar a div que contém o cabeçalho "Endereço" e então pegar o label dentro dela
+            endereco_element = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH, 
-        '//label[@class="ng-binding" and (contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "rua") or '
-        'contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "avenida") or '
-        'contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "estrada") or '
-        'contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "rodovia") or '
-        'contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "alameda") or '
-        'contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "viaduto") or '
-        'contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "viela") or '
-        'contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "praça") or '
-        'contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "travessa") or '
-        'contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "largo") or '
-        'contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "beco") or '
-        'contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "passarela") or '
-        'contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "esplanada") or '
-        'contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "conjunto") or '
-        'contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "quadra") or '
-        'contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "setor") or '
-        'contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "bairro") or '
-        'contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "rodovia") or '
-        'contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "alameda") or '
-        'contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "praça") or '
-        'contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "campo") or '
-        'contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "sítio") or '
-        'contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "rua") or '
-        'contains(translate(text(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "avenida"))]'))
-        )
-            # Exibir o conteúdo completo do <label>
-            endereco_completo = label_element.text
+                '//div[@class="list-group-item"][.//h3[contains(text(), "Endereço")]]'
+                '//div[@class="row"][.//div[@class="small-12 columns"]]'
+                '//label[@class="ng-binding"]'))
+            )
+
+            # Destacar visualmente o elemento encontrado (seleção amarela)
+            driver.execute_script(
+            "arguments[0].style.backgroundColor = 'yellow';"
+            "arguments[0].style.border = '2px solid red';"
+            "arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});",
+            endereco_element
+            )
+
+            # Manter o destaque por 3 segundos para visualização
+            time.sleep(4)
+
+            # Remover o destaque
+            driver.execute_script(
+            "arguments[0].style.backgroundColor = '';"
+            "arguments[0].style.border = '';",
+            endereco_element
+            )
+        
+            # Exibir o conteúdo completo do endereço
+            endereco_completo = endereco_element.text
             print("Endereço completo:", endereco_completo)
 
             # Usar expressão regular para pegar o bairro e remover hifens
@@ -672,7 +715,7 @@ class SistemaProtocolos:
 
                 # Remover todos os hifens do bairro
                 bairro = re.sub(r'-', '', bairro).strip()
-                
+            
                 #especifico para a Vila Barão
                 if bairro.lower() in ["barão", "barao"]:
                     bairro = "Vila Barão"
@@ -689,7 +732,7 @@ class SistemaProtocolos:
 
         finally:
             driver.quit()  # Garantir que o driver será fechado corretamente
-        
+
     #adicionar protocolo na tabela
     def adicionar_protocolo(self):
         data_abertura = self.data_entry.get()
@@ -714,7 +757,7 @@ class SistemaProtocolos:
             messagebox.showwarning("Atenção", "Preencha todos os campos obrigatórios corretamente.")
             return
 
-        caminho_banco = Path("database/db/sistema_protocolos.db")
+        caminho_banco = Path("sis_crm/database/db/sistema_protocolos.db")
         conn = sqlite3.connect(caminho_banco)  # Alterado o nome do banco
         cursor = conn.cursor()
 
@@ -729,7 +772,7 @@ class SistemaProtocolos:
         conn.close()
 
         # Backup automático para Excel
-        caminho_excel = Path(__file__).parent / "database" / "backup" / "backup.xlsx"
+        caminho_excel = Path("sis_crm/database/backup/backup.xlsx")
         caminho_excel.parent.mkdir(parents=True, exist_ok=True)
 
         cabeçalhos = ["ID", "Data Abertura", "Boletim", "Protocolo", "Situação", "Área", "Bairro", "Problema", "Observação", "Aberto Por"]
@@ -802,10 +845,12 @@ class SistemaProtocolos:
         self.combo_situacao.set("Situação (selecione)")
         self.combo_area.set("Área (selecione)")
         self.combo_problema.set("Problema (selecione)")
+        #Corrige o bug do placeholder txt do campo obs desaparecer
         self.entry_observacoes.delete(0, tk.END)
+        self.entry_observacoes.configure(placeholder_text="Observações(se houver)")
 
     def exibir_protocolos(self):
-        caminho_banco = Path("database/db/sistema_protocolos.db")
+        caminho_banco = Path("sis_crm/database/db/sistema_protocolos.db")
         conn = sqlite3.connect(caminho_banco)  # Alterado o nome do banco
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM protocolos")
@@ -822,7 +867,7 @@ class SistemaProtocolos:
     # ATUALIZA A TABELA CONFORME O QUE É DIGITADO NA BARRA DE PESQUISA GERAL
     def atualizar_pesquisa_geral(self, event=None):
         pesquisa = self.entry_pesquisa_principal.get().strip()
-        caminho_banco = Path("database/db/sistema_protocolos.db")
+        caminho_banco = Path("sis_crm/database/db/sistema_protocolos.db")
         conn = sqlite3.connect(caminho_banco)  # Alterado o nome do banco
         cursor = conn.cursor()
 
@@ -863,7 +908,7 @@ class SistemaProtocolos:
     # ATUALIZA A TABELA CONFORME O QUE É DIGITADO NA BARRA DE PESQUISA POR PROTOCOLO
     def atualizar_pesquisa_protocolo(self, event=None):
         pesquisa_protocolo = self.entry_pesquisa_id.get()
-        caminho_banco = Path("database/db/sistema_protocolos.db")
+        caminho_banco = Path("sis_crm/database/db/sistema_protocolos.db")
         conn = sqlite3.connect(caminho_banco)  # Alterado o nome do banco
         cursor = conn.cursor()
 
@@ -906,7 +951,7 @@ class SistemaProtocolos:
                     daemon=True
                 ).start()
                 
-                messagebox.showinfo("Sucesso", "Protocolo está sendo excluído em segundo plano.")
+                messagebox.showinfo("Sucesso", "Protocolo excluido com êxito.")
 
             except Exception as e:
                 messagebox.showerror("Erro", f"Ocorreu um erro ao excluir: {e}")
@@ -914,7 +959,7 @@ class SistemaProtocolos:
     def _excluir_protocolo_background(self, protocolo_id):
         try:
             # Exclusão no banco de dados
-            caminho_banco = Path("database/db/sistema_protocolos.db")
+            caminho_banco = Path("sis_crm/database/db/sistema_protocolos.db")
             conn = sqlite3.connect(caminho_banco)
             cursor = conn.cursor()
             cursor.execute("DELETE FROM protocolos WHERE id = ?", (protocolo_id,))
@@ -934,7 +979,7 @@ class SistemaProtocolos:
 
     def _remover_do_excel(self, protocolo_id):
         try:
-            caminho_excel = Path(__file__).parent / "database" / "backup" / "backup.xlsx"
+            caminho_excel = Path("sis_crm/database/backup/backup.xlsx")
             if not caminho_excel.exists():
                 return
 
@@ -948,9 +993,6 @@ class SistemaProtocolos:
                     break
 
             wb.save(caminho_excel)
-            
-            # Feedback opcional (pode ser removido se não for necessário)
-            self.after(0, lambda: print(f"Protocolo {protocolo_id} removido do Excel com sucesso"))
 
         except Exception as e:
             self.after(0, lambda: print(f"Erro ao remover do Excel: {e}"))
@@ -967,13 +1009,57 @@ class SistemaProtocolos:
             self.edicao_ativa = False  # Desativa após primeiro clique
             self.editar_protocolo(event)
 
+    def mostrar_calendario_ajustado(self, widget):
+        # Aguarda o calendário abrir antes de reposicionar
+        def ajustar_posicao():
+            try:
+                top = widget._top_cal  # TopLevel do calendário
+                if top is not None:
+                    # Posiciona acima do campo
+                    root_x = widget.winfo_rootx()
+                    root_y = widget.winfo_rooty()
+                    top.geometry(f"+{root_x}+{root_y - 200}")
+            except Exception as e:
+                print(f"[Erro ao posicionar calendário]: {e}")
+
+        # Abre o calendário de forma segura
+        widget.after(150, lambda: (widget.drop_down(), ajustar_posicao()))
+
+    #Validar o protocolo ex. DEN-000000-2025
+    def validar_protocolo_edicao(self, event):
+        """Valida o campo de protocolo durante a edição"""
+        widget = event.widget
+        valor = widget.get()
+    
+        # Remove espaços e converte para maiúsculas
+        novo_valor = valor.replace(" ", "").upper()
+    
+        # Verifica se o valor foi alterado (havia espaços)
+        if novo_valor != valor:
+            widget.delete(0, tk.END)
+            widget.insert(0, novo_valor)
+            return
+    
+        # Verifica se excedeu o tamanho máximo (16 caracteres)
+        if len(novo_valor) > 16:
+            widget.delete(16, tk.END)
+            return
+    
+        # Verifica caracteres inválidos (permite letras, números e hífen)
+        for char in novo_valor:
+            if not (char.isalnum() or char == '-'):
+                widget.delete(len(novo_valor)-1, tk.END)
+                return
+
     def editar_protocolo(self, event=None):
+        """Edita um protocolo existente na tabela"""
+        # Identifica o item e coluna clicada
         if event is not None:
             item_id = self.treeview_protocolos.identify_row(event.y)
             coluna = self.treeview_protocolos.identify_column(event.x)
         else:
             item_id = self.treeview_protocolos.focus()
-            coluna = "#2"  # padrão (mas pode evitar isso no modo botão)
+            coluna = "#2"  # padrão para edição via botão
 
         if not item_id:
             messagebox.showwarning("Atenção", "Selecione um protocolo para editar.")
@@ -989,85 +1075,126 @@ class SistemaProtocolos:
         valor_atual = self.treeview_protocolos.set(item_id, col_nome)
 
         def salvar_edicao(event=None):
-            novo_valor = widget.get()
-            self.treeview_protocolos.set(item_id, col_nome, novo_valor)
-            widget.destroy()
-
+            """Salva as alterações feitas no protocolo"""
             try:
+                if col_nome == "Data Abertura":
+                    novo_valor = widget.get_date().strftime('%d/%m/%Y')
+                else:
+                    novo_valor = widget.get() if hasattr(widget, 'get') else widget.cget('text')
+                
+                self.treeview_protocolos.set(item_id, col_nome, novo_valor)
+            
+                # Fecha o widget de edição se ainda existir
+                if widget.winfo_exists():
+                    widget.destroy()
+
+                # Atualiza o banco de dados
                 valores = self.treeview_protocolos.item(item_id, 'values')
                 id_protocolo = valores[0]
 
                 colunas_db = {
-                    "Data Abertura": "data_abertura",
-                    "Boletim": "boletim",
-                    "Protocolo": "protocolo",
-                    "Situação": "situacao",
-                    "Área": "area",
-                    "Bairro": "bairro",
-                    "Problema": "problema",
-                    "Observação": "observacao"
+                "Data Abertura": "data_abertura",
+                "Boletim": "boletim",
+                "Protocolo": "protocolo",
+                "Situação": "situacao",
+                "Área": "area",
+                "Bairro": "bairro",
+                "Problema": "problema",
+                "Observação": "observacao"
                 }
 
                 if col_nome in colunas_db:
                     coluna_db = colunas_db[col_nome]
 
-                    caminho_banco = Path("database/db/sistema_protocolos.db")
-                    conn = sqlite3.connect(caminho_banco)  # Alterado o nome do banco
+                    caminho_banco = Path("sis_crm/database/db/sistema_protocolos.db")
+                    conn = sqlite3.connect(caminho_banco)
                     cursor = conn.cursor()
                     cursor.execute(f"UPDATE protocolos SET {coluna_db} = ? WHERE id = ?", (novo_valor, id_protocolo))
                     conn.commit()
                     conn.close()
 
-                    # Salva no Excel em uma thread separada (assíncrono)
                     threading.Thread(
-                        target=self.atualizar_backup_excel,
-                        args=(id_protocolo, col_nome, novo_valor),
-                        daemon=True
+                    target=self.atualizar_backup_excel,
+                    args=(id_protocolo, col_nome, novo_valor),
+                    daemon=True
                     ).start()
 
             except Exception as e:
                 messagebox.showerror("Erro", f"Erro ao salvar alteração: {e}")
 
-        if col_nome in ["Situação", "Área", "Problema"]:
-            opcoes = {
-                "Situação": ["Aberto",
-                             "Reaberto",
-                             "Em andamento",
-                             "Em retorno",
-                             "Resolvido"],
-                "Área": ["Sudoeste", 
-                         "Centro-Sul", 
-                         "Centro-Norte", 
-                         "Noroeste", 
-                         "Norte", 
-                         "Leste"],
-                "Problema": ["Focos de dengue",
-                            "Imóveis abandonados",
-                            "Acúmulo de lixo e materiais inservíveis",
-                            "Mato alto/entulho",
-                            "Animais Peçonhentos",
-                            "Pombos",
-                            "Morcegos",
-                            "Infestação de Roedores",
-                            "Carrapatos, pulgas e outros ectoparasitas",
-                            "Caramujos",
-                            "Criação de animais rurais em zona urbana",
-                            "Outras Reclamações de Saúde Pública"]
-            }
+        # Configuração do widget de edição
+        if col_nome == "Data Abertura":
+            # Calendário em PT-BR
+            widget = DateEntry(
+            self.treeview_protocolos,
+            date_pattern='dd/mm/yyyy',
+            locale='pt_BR',
+            state='readonly',
+            )
+        
+            try:
+                dia, mes, ano = map(int, valor_atual.split('/'))
+                widget.set_date(datetime(ano, mes, dia))
+            except ValueError:
+                pass
+            
+            self.mostrar_calendario_ajustado(widget)
+            
+            # Configura eventos
+            def handle_calendar_return(event):
+                if widget._top_cal.winfo_exists():
+                    salvar_edicao()
+        
+            widget._calendar.bind("<Return>", handle_calendar_return)
+            widget.bind("<Return>", salvar_edicao)  # <- aqui
+            widget.bind("<<DateEntrySelected>>", lambda e: salvar_edicao())
+            widget.bind("<<DateEntrySelected>>", lambda e: salvar_edicao())
 
-            widget = ttk.Combobox(self.treeview_protocolos, values=opcoes[col_nome])
-            widget.set(valor_atual)
-        else:
+        elif col_nome == "Protocolo":
+            # Campo de protocolo com validação
             widget = ttk.Entry(self.treeview_protocolos)
             widget.insert(0, valor_atual)
+            widget.bind("<KeyRelease>", self.validar_protocolo_edicao)
+            widget.bind("<Return>", salvar_edicao)
+            widget.bind("<FocusOut>", salvar_edicao)
 
+        elif col_nome in ["Situação", "Área", "Problema"]:
+            # Combobox readonly para campos de seleção
+            opcoes = {
+            "Situação": ["Aberto", "Reaberto", "Em andamento", "Em retorno", "Resolvido"],
+            "Área": ["Sudoeste", "Centro-Sul", "Centro-Norte", "Noroeste", "Norte", "Leste"],
+            "Problema": [
+                "Focos de dengue", "Imóveis abandonados", "Acúmulo de lixo e materiais inservíveis",
+                "Mato alto/entulho", "Animais Peçonhentos", "Pombos", "Morcegos",
+                "Infestação de Roedores", "Carrapatos, pulgas e outros ectoparasitas",
+                "Caramujos", "Criação de animais rurais em zona urbana",
+                "Outras Reclamações de Saúde Pública"
+            ]
+            }
+            widget = ttk.Combobox(
+            self.treeview_protocolos,
+            values=opcoes[col_nome],
+            state="readonly"
+            )
+            widget.set(valor_atual)
+            widget.bind("<<ComboboxSelected>>", salvar_edicao)
+            widget.bind("<Return>", salvar_edicao)
+
+        else:
+            # Campo de texto normal para outros campos
+            widget = ttk.Entry(self.treeview_protocolos)
+            widget.insert(0, valor_atual)
+            widget.bind("<Return>", salvar_edicao)
+            widget.bind("<FocusOut>", salvar_edicao)
+
+        # Posiciona o widget de edição
         widget.place(x=x, y=y, width=largura, height=altura)
         widget.focus()
-        widget.bind("<Return>", salvar_edicao)
+
 
     def atualizar_backup_excel(self, id_protocolo, col_nome, novo_valor):
         try:
-            caminho_excel = Path(__file__).parent / "database" / "backup" / "backup.xlsx"
+            caminho_excel = Path("sis_crm/database/backup/backup.xlsx")
             if not caminho_excel.exists():
                 return
 
@@ -1140,9 +1267,9 @@ class SistemaProtocolos:
         label_titulo.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="ew")
     
         # Informações estáticas
-        self.icone_dev = ctk.CTkImage(Image.open("img/icons/icons_app/dev.png"), size=(40, 40))
+        self.icone_dev = ctk.CTkImage(Image.open("sis_crm/img/icons/icons_app/dev.png"), size=(40, 40))
         ctk.CTkLabel(frame_principal, 
-        text=" Desenvolvido por: Gabriel Henrique Constantino\n Estagiário - SES/DZ/PMS",
+        text=" Desenvolvido por: Gabriel Henrique Constantino\n Estagiário - DZ/SES/PMS",
         image=self.icone_dev,
         compound="left",
         font=("Poppins", 14),
@@ -1159,7 +1286,7 @@ class SistemaProtocolos:
         )
         linha_divisoria.grid(row=2, column=0, padx=20, pady=(10, 10), sticky="ew")
         
-        self.icone_email = ctk.CTkImage(Image.open("img/icons/icons_app/mail.png"), size=(24, 24))
+        self.icone_email = ctk.CTkImage(Image.open("sis_crm/img/icons/icons_app/mail.png"), size=(24, 24))
         ctk.CTkLabel(frame_principal, 
         text=" Contato: gabrielconstantinogh@outlook.com",
         image=self.icone_email,
@@ -1172,7 +1299,7 @@ class SistemaProtocolos:
         # Links clicáveis 
 
         # Linha do LinkedIn
-        icone_linkedin = ctk.CTkImage(Image.open("img/icons/icons_app/linkedin.png"), size=(25, 25))
+        icone_linkedin = ctk.CTkImage(Image.open("sis_crm/img/icons/icons_app/linkedin.png"), size=(25, 25))
         ctk.CTkLabel(frame_principal,
         text=" LinkedIn:",
         image=icone_linkedin,
@@ -1197,7 +1324,7 @@ class SistemaProtocolos:
         link_linkedin.bind("<Button-1>", lambda e: abrir_linkedin())
 
         # Linha do GitHub
-        self.icone_github = ctk.CTkImage(Image.open("img/icons/icons_app/github.png"), size=(28, 28))
+        self.icone_github = ctk.CTkImage(Image.open("sis_crm/img/icons/icons_app/github.png"), size=(28, 28))
         ctk.CTkLabel(frame_principal, 
         text="Repositório:",
         image=self.icone_github, 
@@ -1222,7 +1349,7 @@ class SistemaProtocolos:
         link_github.bind("<Button-1>", lambda e: abrir_github())
 
         # Linha da Documentação
-        self.icone_documentacao = ctk.CTkImage(Image.open("img/icons/icons_app/readme.png"), size=(25, 25))
+        self.icone_documentacao = ctk.CTkImage(Image.open("sis_crm/img/icons/icons_app/readme.png"), size=(25, 25))
         ctk.CTkLabel(frame_principal, 
         text=" Documentação:", 
         image=self.icone_documentacao,
@@ -1247,7 +1374,7 @@ class SistemaProtocolos:
         link_docs.bind("<Button-1>", lambda e: abrir_docs())
     
         # Informações estáticas restantes
-        self.icone_versao = ctk.CTkImage(Image.open("img/icons/icons_app/version.png"), size=(25, 25))
+        self.icone_versao = ctk.CTkImage(Image.open("sis_crm/img/icons/icons_app/version.png"), size=(25, 25))
         ctk.CTkLabel(frame_principal, 
         text=" Versão: 1.0.0 | 05/05/2025",
         image=self.icone_versao, 

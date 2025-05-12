@@ -27,7 +27,7 @@ class JanelaAnalise(ctk.CTkToplevel):
         self.attributes("-alpha", 0.0)
         
         # Ícone da janela (mesmo código anterior)
-        caminho_icone = Path(__file__).parent / "img" / "icons" / "icons_window" / "icon_dados.ico"
+        caminho_icone = Path("sis_crm/img/icons/icons_window/icon_dados.ico")
         try:
             if os.name == 'nt':
                 self.after(200, lambda: self.iconbitmap(caminho_icone))
@@ -237,7 +237,7 @@ class JanelaAnalise(ctk.CTkToplevel):
         container_botoes_finais.grid_rowconfigure(0, weight=1)
 
         # Botão "❎" (fechar janela) - com margem interna
-        self.icone_fechar = ctk.CTkImage(Image.open("img/icons/icons_app/close.png"), size=(30, 30))
+        self.icone_fechar = ctk.CTkImage(Image.open("sis_crm/img/icons/icons_app/close.png"), size=(30, 30))
         botao_fechar = ctk.CTkButton(
         container_botoes_finais,
         image=self.icone_fechar,
@@ -254,8 +254,8 @@ class JanelaAnalise(ctk.CTkToplevel):
         )
         botao_fechar.grid(row=0, column=0, padx=(0, 5), pady=8, sticky="e")  # Adicionado pady=8
 
-        self.icone_sol = ctk.CTkImage(Image.open("img/icons/icons_app/sun.png"), size=(30, 30))
-        self.icone_lua = ctk.CTkImage(Image.open("img/icons/icons_app/moon.png"), size=(30, 30))
+        self.icone_sol = ctk.CTkImage(Image.open("sis_crm/img/icons/icons_app/sun.png"), size=(30, 30))
+        self.icone_lua = ctk.CTkImage(Image.open("sis_crm/img/icons/icons_app/moon.png"), size=(30, 30))
         self.icone_inicial = self.icone_sol if ctk.get_appearance_mode() == "Dark" else self.icone_lua
         self.botao_tema = ctk.CTkButton(
         container_botoes_finais,
@@ -477,7 +477,7 @@ class JanelaAnalise(ctk.CTkToplevel):
     def buscar_dados_areas(self):
         """Busca dados das áreas municipais no banco de dados com filtro de data"""
         try:
-            caminho_banco = Path("database/db/sistema_protocolos.db")
+            caminho_banco = Path("sis_crm/database/db/sistema_protocolos.db")
             conn = sqlite3.connect(caminho_banco)  
             cursor = conn.cursor()
     
@@ -698,7 +698,7 @@ class JanelaAnalise(ctk.CTkToplevel):
     def calcular_estatisticas(self):
         """Calcula as estatísticas com base nos dados filtrados, incluindo ranking de bairros"""
         try:
-            caminho_banco = Path("database/db/sistema_protocolos.db")
+            caminho_banco = Path("sis_crm/database/db/sistema_protocolos.db")
             conn = sqlite3.connect(caminho_banco)
             cursor = conn.cursor()
         
@@ -819,7 +819,7 @@ class JanelaAnalise(ctk.CTkToplevel):
     def buscar_dados_assuntos(self):
         """Busca dados de assuntos no banco de dados com filtro de data"""
         try:
-            caminho_banco = Path("database/db/sistema_protocolos.db")
+            caminho_banco = Path("sis_crm/database/db/sistema_protocolos.db")
             conn = sqlite3.connect(caminho_banco)
             cursor = conn.cursor()
 
@@ -1211,7 +1211,7 @@ class JanelaAnalise(ctk.CTkToplevel):
     def buscar_todos_bairros(self, data_inicio=None, data_fim=None):
         """Busca todos os bairros no banco de dados com filtro de datas, incluindo a área municipal"""
         try:
-            caminho_banco = Path("database/db/sistema_protocolos.db")
+            caminho_banco = Path("sis_crm/database/db/sistema_protocolos.db")
             conn = sqlite3.connect(caminho_banco)
             cursor = conn.cursor()
         
