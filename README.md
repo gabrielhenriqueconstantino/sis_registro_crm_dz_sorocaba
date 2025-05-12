@@ -89,6 +89,6 @@ pyinstaller --onefile --noconsole
 
 ## 📄 Licença
 
-Este projeto é livre e pode ser utilizado e modificado por setores da de uso interno da Prefeitura Municipal de Sorocaba
+Este projeto é livre e pode ser utilizado e modificado por setores da da Prefeitura Municipal de Sorocaba.
 
 ---
