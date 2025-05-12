@@ -694,7 +694,7 @@ class SistemaProtocolos:
             endereco_element
             )
 
-            # Manter o destaque por 3 segundos para visualização
+            # Manter o destaque por 4 segundos para visualização
             time.sleep(4)
 
             # Remover o destaque
